@@ -2,15 +2,20 @@
  * Google Translate Helper Class
  *
  * @author Nadia Recarey <nadia.recarey@modelit.xyz>
- * @since  January 2020
+ * @since  April 2020
  */
 
 public with sharing class GoogleTranslateHelper {
 
-	private static Custom_Settings__c settings;
+	/**
+	 * In this case, I have in my org a Hierarchy Custom Setting
+	 * "Translate_Settings__c" with a field "API_Key__c" where I
+	 * store my google translate API Key.
+	 */
+	private static Translate_Settings__c settings;
 
 	static {
-		settings = Custom_Settings__c.getInstance();
+		settings = Translate_Settings__c.getInstance();
 	}
 
 	/**
@@ -56,7 +61,7 @@ public with sharing class GoogleTranslateHelper {
 			}
 		}
 
-		return translatedComments;
+		return translatedTexts;
 	}
 
 	public static HTTPResponse googleTranslateCallout(List<String> texts) {
@@ -65,19 +70,19 @@ public with sharing class GoogleTranslateHelper {
 		String urlText = '';
 
 		for (String text : texts) {
-			text += '&q=' + text;
+			urlText += '&q=' + text;
 		}
 
-		text = text.replace(' ', '%20');
+		urlText = urlText.replace(' ', '%20');
 
-		if (text != '' && (settings.Google_Translate_API_Key__c != null 
-		  || settings.Google_Translate_API_Key__c != '')) {
+		if (urlText != '' && (settings.API_Key__c != null 
+		  || settings.API_Key__c != '')) {
 
 			HttpRequest req = new HttpRequest();
 			Http http = new Http();
 
 			string url = 'https://www.googleapis.com/language/translate/v2?key='
-					+ settings.Google_Translate_API_Key__c
+					+ settings.API_Key__c
 					+ '&target=es&source=en&format=text' + urlText;
 
 			req.setMethod('GET');
@@ -85,10 +90,10 @@ public with sharing class GoogleTranslateHelper {
 
 			resp = http.send(req);
 
-		} else if (settings.Google_Translate_API_Key__c == null 
-		  || settings.Google_Translate_API_Key__c == '') {
+		} else if (settings.API_Key__c == null 
+		  || settings.API_Key__c == '') {
 			System.debug(LoggingLevel.WARN, 'The Google Translate API Key value is empty');
-		} else if (text == '') {
+		} else if (urlText == '') {
 			System.debug(LoggingLevel.WARN, 'The text intended to translate is empty');
 		}
 
